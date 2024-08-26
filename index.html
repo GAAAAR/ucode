@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин UC</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: var(--tg-theme-text-color);
+            background-color: var(--tg-theme-bg-color);
+        }
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid var(--tg-theme-button-color);
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-button-color);
+        }
+        .tab.active {
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .product {
+            border: 1px solid var(--tg-theme-hint-color);
+            padding: 10px;
+            text-align: center;
+        }
+        .product-name {
+            font-weight: bold;
+        }
+        .product-price {
+            margin: 5px 0;
+        }
+        .quantity-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .quantity-control button {
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            border: none;
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            cursor: pointer;
+        }
+        .quantity-control span {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="tab-container">
+        <div class="tab active" onclick="switchTab('code')">CODE</div>
+        <div class="tab" onclick="switchTab('id')">ID</div>
+    </div>
+
+    <div id="codeProducts" class="product-grid">
+        <!-- Продукты CODE будут добавлены здесь с помощью JavaScript -->
+    </div>
+
+    <div id="idProducts" class="product-grid" style="display: none;">
+        <!-- Продукты ID будут добавлены здесь с помощью JavaScript -->
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const codeProducts = [
+            { name: '60UC', price: 100 },
+            { name: '325UC', price: 500 },
+            { name: '660UC', price: 1000 },
+            { name: '1800UC', price: 2500 },
+            { name: '3850UC', price: 5000 },
+            { name: '8100UC', price: 10000 }
+        ];
+
+        const idProducts = [
+            { name: '355UC', price: 550 },
+            { name: '720UC', price: 1100 },
+            { name: '1950UC', price: 2700 },
+            { name: '4000UC', price: 5200 },
+            { name: '8400UC', price: 10200 }
+        ];
+
+        function createProductElement(product) {
+            const productElement = document.createElement('div');
+            productElement.className = 'product';
+            productElement.innerHTML = `
+                <div class="product-name">${product.name}</div>
+                <div class="product-price">${product.price} руб.</div>
+                <div class="quantity-control" style="display: none;">
+                    <button onclick="changeQuantity(this, -1)">-</button>
+                    <span>1</span>
+                    <button onclick="changeQuantity(this, 1)">+</button>
+                </div>
+            `;
+            productElement.onclick = function() {
+                const quantityControl = this.querySelector('.quantity-control');
+                quantityControl.style.display = quantityControl.style.display === 'none' ? 'flex' : 'none';
+            };
+            return productElement;
+        }
+
+        function populateProducts(productType) {
+            const container = document.getElementById(productType + 'Products');
+            const products = productType === 'code' ? codeProducts : idProducts;
+            container.innerHTML = '';
+            products.forEach(product => {
+                container.appendChild(createProductElement(product));
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${tab === 'code' ? 1 : 2})`).classList.add('active');
+            document.getElementById('codeProducts').style.display = tab === 'code' ? 'grid' : 'none';
+            document.getElementById('idProducts').style.display = tab === 'id' ? 'grid' : 'none';
+        }
+
+        function changeQuantity(button, change) {
+            const span = button.parentElement.querySelector('span');
+            let quantity = parseInt(span.textContent) + change;
+            if (quantity < 1) quantity = 1;
+            span.textContent = quantity;
+            event.stopPropagation();
+        }
+
+        // Инициализация продуктов
+        populateProducts('code');
+        populateProducts('id');
+    </script>
+</body>
+</html>
