@@ -5,255 +5,216 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEMONIC UC STORE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @font-face {
+            font-family: 'NOIR PRO';
+            src: url('fonts/NoirPro-Regular.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'NOIR PRO';
+            src: url('fonts/NoirPro-SemiBoldItalic.woff2') format('woff2');
+            font-weight: 600;
+            font-style: normal;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'NOIR PRO', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
-            color: #333;
+            background-color: #DEFFFD;
+            color: #000000;
+            width: 360px;
+            margin: 0 auto;
+            position: relative;
+            overflow-x: hidden;
         }
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .logo {
-            width: 50px;
-            height: 50px;
+            padding: 30px 0;
+            position: relative;
         }
         .store-name {
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            width: 116px;
+            height: 14px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 30px;
+        }
+        .logo {
+            width: 41px;
+            height: 41px;
+            position: absolute;
+            top: 67px;
+            left: 46px;
         }
         .user-info {
-            display: flex;
-            align-items: center;
+            position: absolute;
+            top: 67px;
+            right: 46px;
+            text-align: right;
         }
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 41px;
+            height: 41px;
             border-radius: 50%;
-            margin-right: 10px;
+        }
+        .username {
+            font-size: 12px;
+            font-weight: normal;
+            margin-bottom: 2px;
+        }
+        .balance {
+            font-size: 8px;
+            font-weight: normal;
         }
         .chart-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            width: 301px;
+            height: 174px;
+            background-color: #000000;
+            margin: 126px auto 0;
         }
         .tab-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-top: 27px;
+            font-size: 12px;
+            font-weight: normal;
         }
         .tab {
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #ddd;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        .tab.active {
-            background-color: #007AFF;
-            color: #fff;
+            margin: 0 5px;
         }
         .products {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .product {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .product h3 {
-            margin: 0 0 10px 0;
-        }
-        .quantity-control {
+            width: 301px;
+            height: 37px;
+            background-color: #FF0000;
+            border-radius: 18.5px;
+            margin-bottom: 20px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            margin-top: 10px;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: normal;
+            box-sizing: border-box;
         }
-        .quantity-control button {
-            width: 30px;
-            height: 30px;
-            border: none;
-            background-color: #007AFF;
-            color: #fff;
-            font-size: 18px;
-            border-radius: 15px;
-            cursor: pointer;
+        .product-name {
+            margin-right: auto;
         }
-        .quantity-control span {
-            margin: 0 10px;
+        .product-price {
+            margin-right: 7px;
+        }
+        .cart-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .red-flare {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 0, 0, 0.5);
+            filter: blur(50px);
+        }
+        .red-flare-left {
+            top: 0;
+            left: 0;
+        }
+        .red-flare-right {
+            top: 0;
+            right: 0;
         }
         .nav-bar {
             display: flex;
             justify-content: space-around;
-            background-color: #fff;
             padding: 10px 0;
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            background-color: #DEFFFD;
         }
         .nav-item {
             font-size: 24px;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <img src="placeholder-logo.png" alt="Logo" class="logo">
-            <span class="store-name">DEMONIC UC STORE</span>
-            <div class="user-info">
-                <img src="https://via.placeholder.com/40" alt="User Avatar" class="user-avatar">
-                <span id="username">username</span>
-            </div>
-        </header>
+        <div class="red-flare red-flare-left"></div>
+        <div class="red-flare red-flare-right"></div>
+        <h1 class="store-name">DEMONIC UC STORE</h1>
+        <img src="logo.png" alt="Logo" class="logo">
+        <div class="user-info">
+            <div class="username">username</div>
+            <div class="balance">Balance: $0.00</div>
+            <img src="https://via.placeholder.com/41" alt="User Avatar" class="user-avatar">
+        </div>
 
         <div class="chart-container">
-            <canvas id="purchaseChart"></canvas>
+            <!-- Здесь будет график -->
         </div>
 
         <div class="tab-container">
-            <div class="tab active" onclick="switchTab('code')">CODE</div>
-            <div class="tab" onclick="switchTab('id')">ID</div>
+            <div class="tab">CODE</div>
+            <div class="tab">|</div>
+            <div class="tab">ID</div>
         </div>
 
-        <div class="products" id="productList">
-            <!-- Products will be dynamically added here -->
+        <div class="products">
+            <div class="product">
+                <span class="product-name">355UC</span>
+                <span class="product-price">4.70$</span>
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+            </div>
+            <div class="product">
+                <span class="product-name">720UC</span>
+                <span class="product-price">8.90$</span>
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+            </div>
+            <div class="product">
+                <span class="product-name">1950UC</span>
+                <span class="product-price">22.20$</span>
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+            </div>
+            <div class="product">
+                <span class="product-name">4000UC</span>
+                <span class="product-price">43.20$</span>
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+            </div>
+            <div class="product">
+                <span class="product-name">8400UC</span>
+                <span class="product-price">50.31$</span>
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+            </div>
+            <div class="product">
+                <span class="product-name">9000UC</span>
+                <span class="product-price">60.53$</span>
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+            </div>
         </div>
     </div>
 
     <nav class="nav-bar">
-        <div class="nav-item" onclick="openCart()">🛒</div>
-        <div class="nav-item" onclick="goHome()">🏠</div>
-        <div class="nav-item" onclick="showHistory()">🕒</div>
+        <div class="nav-item">🛒</div>
+        <div class="nav-item">🏠</div>
+        <div class="nav-item">📋</div>
     </nav>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Simulate user data (replace with actual Telegram data in production)
-        const user = {
-            name: "John Doe",
-            avatar: "https://via.placeholder.com/40"
-        };
-
-        // Update user info
-        document.getElementById('username').textContent = user.name;
-        document.querySelector('.user-avatar').src = user.avatar;
-
-        // Simulate product data
-        const products = {
-            code: [
-                { name: "60UC", price: 99 },
-                { name: "325UC", price: 499 },
-                { name: "660UC", price: 999 },
-                { name: "1800UC", price: 2499 },
-                { name: "3850UC", price: 4999 },
-                { name: "8100UC", price: 9999 }
-            ],
-            id: [
-                { name: "60UC", price: 99 },
-                { name: "325UC", price: 499 },
-                { name: "660UC", price: 999 },
-                { name: "1800UC", price: 2499 },
-                { name: "3850UC", price: 4999 },
-                { name: "8100UC", price: 9999 }
-            ]
-        };
-
-        function renderProducts(type) {
-            const productList = document.getElementById('productList');
-            productList.innerHTML = '';
-            products[type].forEach(product => {
-                const productElement = document.createElement('div');
-                productElement.className = 'product';
-                productElement.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p>${product.price}₽</p>
-                    <div class="quantity-control">
-                        <button onclick="changeQuantity(this, -1)">-</button>
-                        <span>0</span>
-                        <button onclick="changeQuantity(this, 1)">+</button>
-                    </div>
-                `;
-                productList.appendChild(productElement);
-            });
-        }
-
-        function switchTab(type) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.tab:nth-child(${type === 'code' ? 1 : 2})`).classList.add('active');
-            renderProducts(type);
-        }
-
-        function changeQuantity(button, change) {
-            const span = button.parentElement.querySelector('span');
-            let quantity = parseInt(span.textContent) + change;
-            if (quantity < 0) quantity = 0;
-            span.textContent = quantity;
-        }
-
-        // Render purchase chart
-        const ctx = document.getElementById('purchaseChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'],
-                datasets: [{
-                    label: 'Покупки',
-                    data: [12, 19, 3, 5, 2, 3, 7],
-                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                    borderColor: 'rgba(0, 123, 255, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        function openCart() {
-            // Implement cart functionality
-            console.log('Opening cart');
-        }
-
-        function goHome() {
-            // Implement home navigation
-            console.log('Going home');
-        }
-
-        function showHistory() {
-            // Implement history functionality
-            console.log('Showing history');
-        }
-
-        // Initial render
-        renderProducts('code');
+        // Здесь будет дополнительная логика JavaScript
     </script>
 </body>
 </html>

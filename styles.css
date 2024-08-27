@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'NOIR PRO';
+    src: url('fonts/NoirPro-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NOIR PRO';
+    src: url('fonts/NoirPro-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+}
