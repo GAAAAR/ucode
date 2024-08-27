@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEMONIC UC STORE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,6 +25,14 @@
             align-items: center;
             margin-bottom: 20px;
         }
+        .logo {
+            width: 50px;
+            height: 50px;
+        }
+        .store-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
         .user-info {
             display: flex;
             align-items: center;
@@ -34,23 +43,62 @@
             border-radius: 50%;
             margin-right: 10px;
         }
-        .chart {
+        .chart-container {
             background-color: #fff;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
             margin-bottom: 20px;
+        }
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #007AFF;
+            color: #fff;
         }
         .products {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 20px;
         }
         .product {
             background-color: #fff;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 15px;
             text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .product h3 {
+            margin: 0 0 10px 0;
+        }
+        .quantity-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .quantity-control button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background-color: #007AFF;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .quantity-control span {
+            margin: 0 10px;
         }
         .nav-bar {
             display: flex;
@@ -61,24 +109,32 @@
             bottom: 0;
             left: 0;
             right: 0;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
         }
         .nav-item {
             font-size: 24px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>DEMONIC UC STORE</h1>
+            <img src="placeholder-logo.png" alt="Logo" class="logo">
+            <span class="store-name">DEMONIC UC STORE</span>
             <div class="user-info">
                 <img src="https://via.placeholder.com/40" alt="User Avatar" class="user-avatar">
                 <span id="username">username</span>
             </div>
         </header>
 
-        <div class="chart" id="purchaseChart">
-            <!-- Chart will be rendered here -->
+        <div class="chart-container">
+            <canvas id="purchaseChart"></canvas>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('code')">CODE</div>
+            <div class="tab" onclick="switchTab('id')">ID</div>
         </div>
 
         <div class="products" id="productList">
@@ -87,9 +143,9 @@
     </div>
 
     <nav class="nav-bar">
-        <div class="nav-item">🛒</div>
-        <div class="nav-item">🏠</div>
-        <div class="nav-item">🕒</div>
+        <div class="nav-item" onclick="openCart()">🛒</div>
+        <div class="nav-item" onclick="goHome()">🏠</div>
+        <div class="nav-item" onclick="showHistory()">🕒</div>
     </nav>
 
     <script>
@@ -107,61 +163,97 @@
         document.querySelector('.user-avatar').src = user.avatar;
 
         // Simulate product data
-        const products = [
-            { name: "60UC", price: 99, type: "CODE" },
-            { name: "60UC", price: 99, type: "ID" },
-            { name: "325UC", price: 499, type: "CODE" },
-            { name: "325UC", price: 499, type: "ID" },
-            { name: "660UC", price: 999, type: "CODE" },
-            { name: "660UC", price: 999, type: "ID" }
-        ];
-
-        // Render products
-        const productList = document.getElementById('productList');
-        products.forEach(product => {
-            const productElement = document.createElement('div');
-            productElement.className = 'product';
-            productElement.innerHTML = `
-                <h3>${product.name}</h3>
-                <p>${product.price}₽</p>
-                <p>${product.type}</p>
-            `;
-            productList.appendChild(productElement);
-        });
-
-        // Simulate purchase data (replace with actual data in production)
-        const purchaseData = {
-            labels: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'],
-            datasets: [
-                {
-                    label: 'CODE',
-                    data: [12, 19, 3, 5, 2, 3, 7],
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
-                },
-                {
-                    label: 'ID',
-                    data: [7, 11, 5, 8, 3, 7, 9],
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                }
+        const products = {
+            code: [
+                { name: "60UC", price: 99 },
+                { name: "325UC", price: 499 },
+                { name: "660UC", price: 999 },
+                { name: "1800UC", price: 2499 },
+                { name: "3850UC", price: 4999 },
+                { name: "8100UC", price: 9999 }
+            ],
+            id: [
+                { name: "60UC", price: 99 },
+                { name: "325UC", price: 499 },
+                { name: "660UC", price: 999 },
+                { name: "1800UC", price: 2499 },
+                { name: "3850UC", price: 4999 },
+                { name: "8100UC", price: 9999 }
             ]
         };
 
-        // Render chart (you'll need to implement this based on your chosen charting library)
-        function renderChart(data) {
-            const chartElement = document.getElementById('purchaseChart');
-            // Implement chart rendering here
-            chartElement.innerHTML = "Chart placeholder (implement with a charting library)";
+        function renderProducts(type) {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+            products[type].forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product';
+                productElement.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p>${product.price}₽</p>
+                    <div class="quantity-control">
+                        <button onclick="changeQuantity(this, -1)">-</button>
+                        <span>0</span>
+                        <button onclick="changeQuantity(this, 1)">+</button>
+                    </div>
+                `;
+                productList.appendChild(productElement);
+            });
         }
 
-        renderChart(purchaseData);
+        function switchTab(type) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${type === 'code' ? 1 : 2})`).classList.add('active');
+            renderProducts(type);
+        }
 
-        // Handle navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // Implement navigation logic here
-                console.log('Navigating to:', this.textContent);
-            });
+        function changeQuantity(button, change) {
+            const span = button.parentElement.querySelector('span');
+            let quantity = parseInt(span.textContent) + change;
+            if (quantity < 0) quantity = 0;
+            span.textContent = quantity;
+        }
+
+        // Render purchase chart
+        const ctx = document.getElementById('purchaseChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'],
+                datasets: [{
+                    label: 'Покупки',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
         });
+
+        function openCart() {
+            // Implement cart functionality
+            console.log('Opening cart');
+        }
+
+        function goHome() {
+            // Implement home navigation
+            console.log('Going home');
+        }
+
+        function showHistory() {
+            // Implement history functionality
+            console.log('Showing history');
+        }
+
+        // Initial render
+        renderProducts('code');
     </script>
 </body>
 </html>
