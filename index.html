@@ -14,7 +14,7 @@
         }
         @font-face {
             font-family: 'NOIR PRO';
-            src: url('fonts/NoirPro-SemiBoldItalic.woff2') format('woff2');
+            src: url('fonts/NoirPro-SemiBold.woff2') format('woff2');
             font-weight: 600;
             font-style: normal;
         }
@@ -71,6 +71,11 @@
             font-size: 8px;
             font-weight: normal;
         }
+        .vip-status {
+            font-size: 10px;
+            color: gold;
+            margin-top: 2px;
+        }
         .chart-container {
             width: 301px;
             height: 174px;
@@ -86,6 +91,7 @@
         }
         .tab {
             margin: 0 5px;
+            cursor: pointer;
         }
         .products {
             margin-top: 20px;
@@ -107,6 +113,7 @@
             font-size: 13px;
             font-weight: normal;
             box-sizing: border-box;
+            cursor: pointer;
         }
         .product-name {
             margin-right: auto;
@@ -145,6 +152,7 @@
         }
         .nav-item {
             font-size: 24px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -155,9 +163,10 @@
         <h1 class="store-name">DEMONIC UC STORE</h1>
         <img src="logo.png" alt="Logo" class="logo">
         <div class="user-info">
-            <div class="username">username</div>
-            <div class="balance">Balance: $0.00</div>
-            <img src="https://via.placeholder.com/41" alt="User Avatar" class="user-avatar">
+            <div class="username" id="username">username</div>
+            <div class="balance" id="balance">Баланс: 0 ₽</div>
+            <div class="vip-status" id="vipStatus"></div>
+            <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
         </div>
 
         <div class="chart-container">
@@ -165,56 +174,160 @@
         </div>
 
         <div class="tab-container">
-            <div class="tab">CODE</div>
+            <div class="tab" onclick="switchTab('code')">CODE</div>
             <div class="tab">|</div>
-            <div class="tab">ID</div>
+            <div class="tab" onclick="switchTab('id')">ID</div>
         </div>
 
-        <div class="products">
-            <div class="product">
-                <span class="product-name">355UC</span>
-                <span class="product-price">4.70$</span>
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
-            </div>
-            <div class="product">
-                <span class="product-name">720UC</span>
-                <span class="product-price">8.90$</span>
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
-            </div>
-            <div class="product">
-                <span class="product-name">1950UC</span>
-                <span class="product-price">22.20$</span>
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
-            </div>
-            <div class="product">
-                <span class="product-name">4000UC</span>
-                <span class="product-price">43.20$</span>
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
-            </div>
-            <div class="product">
-                <span class="product-name">8400UC</span>
-                <span class="product-price">50.31$</span>
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
-            </div>
-            <div class="product">
-                <span class="product-name">9000UC</span>
-                <span class="product-price">60.53$</span>
-                <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
-            </div>
+        <div class="products" id="productList">
+            <!-- Продукты будут добавлены динамически -->
         </div>
     </div>
 
     <nav class="nav-bar">
-        <div class="nav-item">🛒</div>
-        <div class="nav-item">🏠</div>
-        <div class="nav-item">📋</div>
+        <div class="nav-item" onclick="openCart()">🛒</div>
+        <div class="nav-item" onclick="goHome()">🏠</div>
+        <div class="nav-item" onclick="showHistory()">📋</div>
     </nav>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Здесь будет дополнительная логика JavaScript
+        const products = {
+            code: [
+                { name: "355UC", price: 4.70 },
+                { name: "720UC", price: 8.90 },
+                { name: "1950UC", price: 22.20 },
+                { name: "4000UC", price: 43.20 },
+                { name: "8400UC", price: 50.31 },
+                { name: "9000UC", price: 60.53 }
+            ],
+            id: [
+                { name: "355UC", price: 4.70 },
+                { name: "720UC", price: 8.90 },
+                { name: "1950UC", price: 22.20 },
+                { name: "4000UC", price: 43.20 },
+                { name: "8400UC", price: 50.31 },
+                { name: "9000UC", price: 60.53 }
+            ]
+        };
+
+        function saveUserData(userData) {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        function getUserData() {
+            const userData = localStorage.getItem('userData');
+            return userData ? JSON.parse(userData) : null;
+        }
+
+        function updateUserInfo(userData) {
+            document.getElementById('username').textContent = userData.name + (userData.surname ? ' ' + userData.surname : '');
+            document.getElementById('balance').textContent = `Баланс: ${userData.balance.toFixed(2)} ₽`;
+            document.getElementById('vipStatus').textContent = userData.isVip ? 'VIP' : '';
+            document.getElementById('userAvatar').src = userData.avatar || 'https://via.placeholder.com/41';
+        }
+
+        function initUserData() {
+            let userData = getUserData();
+            if (!userData) {
+                userData = {
+                    name: 'Иван',
+                    surname: 'Иванов',
+                    balance: 1000,
+                    isVip: false,
+                    avatar: '',
+                    purchaseHistory: [],
+                    topUpHistory: []
+                };
+                saveUserData(userData);
+            }
+            updateUserInfo(userData);
+        }
+
+        function addPurchase(item, amount) {
+            let userData = getUserData();
+            userData.purchaseHistory.push({
+                item: item,
+                amount: amount,
+                date: new Date().toISOString()
+            });
+            userData.balance -= amount;
+            saveUserData(userData);
+            updateUserInfo(userData);
+        }
+
+        function addTopUp(amount) {
+            let userData = getUserData();
+            userData.topUpHistory.push({
+                amount: amount,
+                date: new Date().toISOString()
+            });
+            userData.balance += amount;
+            saveUserData(userData);
+            updateUserInfo(userData);
+        }
+
+        function renderProducts(type) {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+            products[type].forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product';
+                productElement.innerHTML = `
+                    <span class="product-name">${product.name}</span>
+                    <span class="product-price">${product.price.toFixed(2)}$</span>
+                    <img src="https://img.icons8.com/ios-filled/50/ffffff/add-shopping-cart.png" alt="Add to cart" class="cart-icon">
+                `;
+                productElement.onclick = () => addToCart(product);
+                productList.appendChild(productElement);
+            });
+        }
+
+        function switchTab(type) {
+            document.querySelectorAll('.tab').forEach(tab => tab.style.fontWeight = 'normal');
+            document.querySelector(`.tab:nth-child(${type === 'code' ? 1 : 3})`).style.fontWeight = 'bold';
+            renderProducts(type);
+        }
+
+        function addToCart(product) {
+            // Здесь должна быть логика добавления в корзину
+            console.log(`Добавлено в корзину: ${product.name} за ${product.price}$`);
+            // Для демонстрации сразу производим покупку
+            addPurchase(product.name, product.price);
+        }
+
+        function openCart() {
+            // Реализация корзины
+            console.log('Открытие корзины');
+        }
+
+        function goHome() {
+            // Переход на главную страницу
+            console.log('Переход на главную');
+            switchTab('code'); // Возвращаемся к отображению CODE товаров
+        }
+
+        function showHistory() {
+            // Показ истории покупок и пополнений
+            const userData = getUserData();
+            console.log('История покупок:', userData.purchaseHistory);
+            console.log('История пополнений:', userData.topUpHistory);
+            // Здесь должно быть отображение истории на странице
+        }
+
+        // Инициализация данных при загрузке страницы
+        initUserData();
+        switchTab('code');
+
+        // Демонстрационная функция для пополнения баланса
+        function demoTopUp() {
+            addTopUp(100); // Пополнение на 100 рублей
+            console.log('Баланс пополнен на 100 рублей');
+        }
+
+        // Здесь может быть дополнительная логика для взаимодействия с Telegram WebApp
     </script>
 </body>
 </html>
